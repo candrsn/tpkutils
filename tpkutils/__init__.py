@@ -104,14 +104,17 @@ class TPK(object):
         logger.debug('Reading package metadata')
 
         # File format, zoom levels, etc in .../<root layer name>/conf.xml
-        conf_filename = [f for f in self._fp.namelist() if 'conf.xml' in f][0]
+        conf_filename = [f for f in self._fp.namelist() if 'conf.xml' in f or 'conf.metadata.xml' in f][0]
         self.root_name = os.path.split(os.path.dirname(conf_filename))[1]
         xml = ElementTree.fromstring(self._fp.read(conf_filename))
         self.zoom_levels = [
             int(e.text) for e in
             xml.findall('TileCacheInfo/LODInfos/LODInfo/LevelID')
         ]
-        self.format = xml.find('TileImageInfo/CacheTileFormat').text
+        try:
+            self.format = xml.find('TileImageInfo/CacheTileFormat').text
+        except:
+            self.format = 'MIXED'
 
         # Descriptive info in esriinfo/iteminfo.xml
         # Some fields are required by ArcGIS to create tile package
